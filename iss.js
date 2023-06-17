@@ -57,12 +57,14 @@ const fetchISSFlyOverTimes = (coords, callback) => {
     callback(error, null);
     return;
   }
+
   if (response.statusCode !== 200) {
     console.log(response);
     const msg = `Status Code ${response.statusCode} when fetching IP. Response: ${body}`;
     callback(Error(msg), null);
     return;
   }
+
   const parsedBody = JSON.parse(body)
   
   callback(error, parsedBody.response)
@@ -70,4 +72,43 @@ const fetchISSFlyOverTimes = (coords, callback) => {
   })
 };
 
-module.exports = { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes };
+
+
+
+const nextISSTimesForMyLocation = (callback) => {
+  //get ip
+  fetchMyIP((error, ip) => {
+  
+  if (error) {
+    console.log("It didn't work!" , error);
+    return;
+  }
+
+  //success!
+  //get coordinates from ip
+  fetchCoordsByIP(ip, (error, data) => {
+
+    if (error) {
+      console.log("It didn't work!" , error);
+      return;
+    }
+
+    //success!
+    //get flyover times from coordinates
+    fetchISSFlyOverTimes(data, (error, data) => {
+
+      if (error) {
+        callback(error, null);
+        return;
+      }
+
+      //success!!
+      //send back info via callback
+      callback(null, data)
+    })
+  });
+});
+
+}
+
+module.exports = { nextISSTimesForMyLocation };
